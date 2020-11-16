@@ -13,10 +13,10 @@ import io.ktor.server.testing.*
 
 import com.voting.db.dao.*
 
-class DaoTest {
+class UserTest {
 
     @Test
-    fun testUserCreation() {
+    fun testCreation() {
         val user: User? = createUser("test", "test", true)
 
         assertNotNull(user)
@@ -29,7 +29,7 @@ class DaoTest {
     }
 
     @Test
-    fun testUserCreationDuplicate() {
+    fun testCreationDuplicate() {
         // should not have users with duplicate names
 
         val user: User? = createUser("test", "test", true)
@@ -39,6 +39,30 @@ class DaoTest {
         assertNull(user2)
 
         user.remove()
+    }
+
+}
+
+class RoundTest {
+
+    @Test
+    fun testEmpty() {
+        val bracket: Bracket = createBracket("test", 3)
+
+        val round = createRound(null, null, bracket, null)
+
+        assertNull(round.left)
+        assertNull(round.right)
+        assertNull(round.child)
+        assertFalse(round.resolved)
+
+        assertFalse(round.hasEntrants())
+
+        assertTrue(round.isFinale())
+
+        assertFalse(round.canBeResolved())
+
+        round.remove()
     }
 
 }
