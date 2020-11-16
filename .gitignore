@@ -1,0 +1,12 @@
+/.gradle
+/.idea
+/out
+/build
+*.iml
+*.ipr
+*.iws
+gradle
+gradlew
+gradlew.bat
+
+resources/static/uploaded
