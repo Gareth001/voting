@@ -22,7 +22,6 @@ class UserTest {
         assertNotNull(user)
 
         assertEquals(user.name, "test")
-        assertEquals(user.passwordHash, "test")
         assertEquals(user.admin, true)
 
         user.remove()
@@ -57,9 +56,7 @@ class RoundTest {
         assertFalse(round.resolved)
 
         assertFalse(round.hasEntrants())
-
         assertTrue(round.isFinale())
-
         assertFalse(round.canBeResolved())
 
         round.remove()

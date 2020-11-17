@@ -8,6 +8,7 @@ import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.dao.*
 import org.jetbrains.exposed.sql.*
 import java.io.*
+import org.mindrot.jbcrypt.BCrypt
 
 class User(id: EntityID<Int>) : IntEntity(id) {
     companion object : IntEntityClass<User>(Users)
@@ -26,17 +27,22 @@ class User(id: EntityID<Int>) : IntEntity(id) {
 
 }
 
-fun createUser(name: String, passwordHash: String, admin: Boolean): User? {
+fun createUser(name: String, password: String, admin: Boolean): User? {
     // can result in Unique index or primary key violation
     return try {
         transaction {
             User.new {
                 this.name = name
-                this.passwordHash = passwordHash
+                this.passwordHash = BCrypt.hashpw(password, BCrypt.gensalt())
                 this.admin = admin
             }
         }
     } catch (e: Exception) {
         null
     }
+}
+
+fun lookupUser(name: String): User? {
+    return transaction { User.find { Users.name eq name }.firstOrNull() }
+
 }
