@@ -19,7 +19,7 @@ import org.mindrot.jbcrypt.BCrypt
 val db = initdb()
 
 /**
- * Typed session that will be used in this application.
+ * Typed session that will be used in this application
  */
 data class MySession(val username: String)
 
@@ -51,86 +51,8 @@ fun Application.module(testing: Boolean = false) {
             files("resources/static")
         }
 
-        route("/login") {
-            get {
-                call.respondHtml {
-                    body {
-                        form(action = "/login", method = FormMethod.post) {
-
-                            +"username: "
-                            input(InputType.text, name = "username") 
-                            br()
-
-                            +"password: "
-                            input(InputType.password, name = "password")
-                            br()
-
-                            input(InputType.submit) { value = "Login" }
-                        }
-                    }
-                }            
-            }
-
-            post {
-                val post = call.receive<Parameters>()
-
-                // get user associated with the username
-                val user: User? = post["username"]?.let {lookupUser(it)}
-
-                if (user == null || post["password"] == null) {
-                    call.respondRedirect("/login", permanent = false)
-
-                } else {
-                    // authenticate password
-                    if (BCrypt.checkpw(post["password"], user.passwordHash)) {
-                        call.sessions.set(MySession(user.name))
-                        call.respondRedirect("/", permanent = false)
-
-                    } else {
-                        call.respondRedirect("/login", permanent = false)
-
-                    }
-                }
-            }
-        }
-
-        route("/bracket") {
-
-            get("/new") {
-                val user = call.sessions.get<MySession>()?.username?.let {lookupUser(it)}
-    
-                if (user == null || user.admin == false) {
-                    call.respondRedirect("/login", permanent = false)
-
-                } else {
-                    call.respondHtml {
-                        body {
-                            +"Welcome! Logged in as ${user.name}"
-                        }
-                    }            
-
-                }
-            }
-
-            get("/{bracketid}") {
-                val user = call.sessions.get<MySession>()?.username?.let {lookupUser(it)}
-    
-                if (user == null || user.admin == false) {
-                    call.respondRedirect("/login", permanent = false)
-
-                } else {
-                    println(call.parameters["bracketid"])
-                    call.respondHtml {
-                        body {
-                            +"Welcome! Logged in as ${user.name}"
-                        }
-                    }            
-
-                }
-            }
-
-        }
-
+        login()
+        bracket()
 
         get("/") {
 
@@ -157,10 +79,6 @@ fun Application.module(testing: Boolean = false) {
                     }
                 }            
             }
-        }
-
-        post("/html-dsl") {
-            call.receive<Parameters>()
         }
 
         get("/html-dsl") {
@@ -200,33 +118,5 @@ fun Application.module(testing: Boolean = false) {
             }
         }
 
-        get("/styles.css") {
-            call.respondCss {
-                body {
-                    backgroundColor = Color.red
-                }
-                p {
-                    fontSize = 2.em
-                }
-                rule("p.myclass") {
-                    color = Color.blue
-                }
-            }
-        }
-
     }
-}
-
-fun FlowOrMetaDataContent.styleCss(builder: CSSBuilder.() -> Unit) {
-    style(type = ContentType.Text.CSS.toString()) {
-        +CSSBuilder().apply(builder).toString()
-    }
-}
-
-fun CommonAttributeGroupFacade.style(builder: CSSBuilder.() -> Unit) {
-    this.style = CSSBuilder().apply(builder).toString().trim()
-}
-
-suspend inline fun ApplicationCall.respondCss(builder: CSSBuilder.() -> Unit) {
-    this.respondText(CSSBuilder().apply(builder).toString(), ContentType.Text.CSS)
 }
