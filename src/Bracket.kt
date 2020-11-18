@@ -29,23 +29,115 @@ fun Route.bracket() {
                 call.respondHtml {
                     body {
                         +"Welcome! Logged in as ${user.name}"
+
+                        // take multiple image files 
+                        form(action = "new", method = FormMethod.post, encType = FormEncType.multipartFormData) {
+                            +"Image Files (1 per entrant): "
+                            input(InputType.file, name = "file[]") {
+                                attributes["multiple"] = "true"
+                            }
+                            br()
+
+                            +"Bracket Name: "
+                            input(InputType.text, name = "name") 
+                            br()
+
+                            +"Voting threshold for each round: "
+                            input(InputType.number, name = "threshold") 
+                            br()
+
+                            input(InputType.submit) { value = "Create New Bracket" }
+
+                        }
+
                     }
                 }            
 
             }
         }
 
-        get("/{bracketid}") {
+        post("/new") {
             val user = call.sessions.get<MySession>()?.username?.let {lookupUser(it)}
 
             if (user == null || user.admin == false) {
                 call.respondRedirect("/login", permanent = false)
 
             } else {
-                println(call.parameters["bracketid"])
+                val multipart = call.receiveMultipart()
+
+                var bracketName: String? = null
+                var threshold: Int? = null
+                var entries: MutableList<Entry> = mutableListOf()
+
+                // loop over each item in the response
+                multipart.forEachPart { part ->
+                    when (part) {
+                        is PartData.FormItem -> {
+                            // items from the inputs
+                            if (part.name == "name") {
+                                bracketName = part.value
+                            }
+                            if (part.name == "threshold") {
+                                threshold = part.value.toIntOrNull()
+                            }
+                        }
+                        is PartData.FileItem -> {
+                            // if a file, create the corresponding entry
+                            entries.add(createEntry(part.streamProvider()))
+                        }
+                    }
+                    part.dispose()
+                }
+
+                // must have at least 2 entrants, otherwise there'd be no point
+                if (entries.size > 1) {
+                    
+                    // create bracket
+                    val bracket: Bracket? = bracketName?.run {
+                        threshold?.let {
+                            createBracket(this, it)
+                        }
+                    }
+
+                    if (bracket == null) {
+                        // unsucessful - clear all entries
+                        entries.forEach { it.remove() }
+                        call.respondRedirect("/bracket/new", permanent = false)
+
+                    } else {
+                        bracket.createRounds(entries)
+                        call.respondRedirect("/bracket/${bracket.id.value}", permanent = false)
+
+                    }
+
+                } else {
+                    // unsucessful - clear all entries
+                    entries.forEach { it.remove() }
+                    call.respondRedirect("/bracket/new", permanent = false)
+                    
+                }
+            }
+        }
+
+
+        get("/{bracketid}") {
+            val user = call.sessions.get<MySession>()?.username?.let {lookupUser(it)}
+
+            // get bracket from id
+            val bracket: Bracket? = call.parameters["bracketid"]?.toIntOrNull()?.let { lookupBracket(it) } 
+
+            if (user == null || user.admin == false || bracket == null) {
+                call.respondRedirect("/login", permanent = false)
+
+            } else {
+
+                println(bracket)
                 call.respondHtml {
                     body {
                         +"Welcome! Logged in as ${user.name}"
+                        br()
+                        +"Viewing bracket ${bracket.name}"
+
                     }
                 }            
 

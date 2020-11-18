@@ -47,6 +47,7 @@ fun Application.module(testing: Boolean = false) {
 
     routing {
         // serve static files
+        // TODO intercept to check login
         static("static") {
             files("resources/static")
         }
@@ -85,21 +86,21 @@ fun Application.module(testing: Boolean = false) {
 
             val numbers = (0..9).toList()
             val user: User? = createUser("test", "test", true)
-            val entry: Entry = createEntry("test".toByteArray())
+            // val entry: Entry = createEntry("test".toByteArray())
 
-            val bracket: Bracket = createBracket("test", 5)
+            // val bracket: Bracket = createBracket("test", 5)
 
-            bracket.createRounds(MutableList(51) {"test".toByteArray()})
+            // bracket.createRounds(MutableList(51) {"test".toByteArray()})
 
-            println(bracket.name)
+            // println(bracket.name)
 
-            println(bracket.getRounds())
+            // println(bracket.getRounds())
 
-            println(bracket.name)
-            bracket.name = "testing"
-            println(bracket.name)
+            // println(bracket.name)
+            // bracket.name = "testing"
+            // println(bracket.name)
 
-            bracket.getRounds().first().canBeResolved()
+            // bracket.getRounds().first().canBeResolved()
 
             // println(Round.all())
 
@@ -110,9 +111,6 @@ fun Application.module(testing: Boolean = false) {
                         for (n in numbers) {
                             li { +"$n" }
                         }
-                    }
-                    img {
-                        src = "static/${entry.getImagePath()}"
                     }
                 }
             }

@@ -52,10 +52,7 @@ class Bracket(id: EntityID<Int>) : IntEntity(id) {
     }
 
     // given a list of images, initializes all entries and rounds
-    fun createRounds(images: List<ByteArray>) {
-
-        // firstly create all entries
-        val entries: List<Entry> = images.map { createEntry(it) }
+    fun createRounds(entries: List<Entry>) {
 
         // Create all rounds from these entries
         val chunks: List<List<Entry>> = entries.chunked(2)
@@ -136,4 +133,10 @@ fun createBracket(name: String, threshold: Int): Bracket {
             this.threshold = threshold
         }
     }
+}
+
+
+fun lookupBracket(id: Int): Bracket? {
+    return transaction { Bracket.find { Brackets.id eq id }.firstOrNull() }
+
 }
