@@ -57,9 +57,9 @@ class Bracket(id: EntityID<Int>) : IntEntity(id) {
         // Create all rounds from these entries
         val chunks: List<List<Entry>> = entries.chunked(2)
 
-        val rounds: List<Round> = chunks.mapNotNull { 
-            if (it.size == 1) null else createRound(it[0], it[1], this, null)
-        }
+        val rounds: List<Round> = chunks.mapIndexed { index, round ->
+            if (round.size == 1) null else createRound(round[0], round[1], index+1, this, null)
+        }.filterNotNull()
 
         // See if there's a leftover round (i.e. odd number of entrants)
         val leftover: Entry? = if (chunks.lastOrNull()?.size == 1) {
@@ -67,6 +67,8 @@ class Bracket(id: EntityID<Int>) : IntEntity(id) {
         } else {
             null
         }
+
+        var roundNumber = rounds.size
 
         println("created ${rounds.size} rounds with leftover ${leftover}")
 
@@ -87,11 +89,13 @@ class Bracket(id: EntityID<Int>) : IntEntity(id) {
 
             // check if there is a leftover, add it to the intial round
             if (leftoverEntry != null) {
-                myRounds.add(createRound(leftoverEntry, null, this, Pair(null, rounds[0])))
+                myRounds.add(createRound(leftoverEntry, null, roundNumber + 1, this, Pair(null, rounds[0])))
+                roundNumber += 1
                 startIndex = 1
 
             } else if (leftoverRound != null) {
-                myRounds.add(createRound(null, null, this, Pair(leftoverRound, rounds[0])))
+                myRounds.add(createRound(null, null, roundNumber + 1, this, Pair(leftoverRound, rounds[0])))
+                roundNumber += 1
                 startIndex = 1
 
             }
@@ -101,7 +105,8 @@ class Bracket(id: EntityID<Int>) : IntEntity(id) {
 
             myRounds.addAll(
                 newChunks.mapNotNull { 
-                    if (it.size == 1) null else createRound(null, null, this, Pair(it[0], it[1]))
+                    roundNumber += 1
+                    if (it.size == 1) null else createRound(null, null, roundNumber + 1, this, Pair(it[0], it[1]))
                 }
             )
 

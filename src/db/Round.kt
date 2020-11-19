@@ -13,8 +13,29 @@ class Round(id: EntityID<Int>) : IntEntity(id) {
     companion object : IntEntityClass<Round>(Rounds)
 
     var resolved by Rounds.resolved
-    var left by Entry optionalReferencedOn Rounds.left
-    var right by Entry optionalReferencedOn Rounds.right
+    var number by Rounds.number
+
+
+    var _left by Entry optionalReferencedOn Rounds.left
+        private set
+    var left: Entry?
+        set(value) {
+            this.let { transaction { it._left = value } }
+        }
+        get() {
+            return this.let { transaction { it._left } }
+        }
+
+    var _right by Entry optionalReferencedOn Rounds.right
+        private set
+    var right: Entry?
+        set(value) {
+            this.let { transaction { it._right = value } }
+        }
+        get() {
+            return this.let { transaction { it._right } }
+        }
+    
     var bracket by Bracket referencedOn Rounds.bracket
 
     var child by Round optionalReferencedOn Rounds.child
@@ -25,6 +46,15 @@ class Round(id: EntityID<Int>) : IntEntity(id) {
 
     var votes by User via RoundUsers
     
+    fun getParents(): List<Round> {
+        // required workaround due to this having a different meaning in the transaction
+        return this.let {
+            transaction {
+                it.parents.asSequence().toList()
+            }
+        }
+    }
+
     fun remove() {
         this.let {
             transaction {
@@ -126,10 +156,11 @@ class Round(id: EntityID<Int>) : IntEntity(id) {
  * Optionally, pass the left and right parents of this round 
  * Rounds may not have a right parent, and some rounds have no parents.
  */
-fun createRound(left: Entry?, right: Entry?, bracket: Bracket, parent: Pair<Round?,Round>?): Round {
+fun createRound(left: Entry?, right: Entry?, number: Int, bracket: Bracket, parent: Pair<Round?,Round>?): Round {
     return transaction {
         val round = Round.new {
             this.resolved = false
+            this.number = number
             this.left = left
             this.bracket = bracket
             this.right = right

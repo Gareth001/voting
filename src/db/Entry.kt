@@ -17,7 +17,7 @@ class Entry(id: EntityID<Int>) : IntEntity(id) {
     * Returns the path to the image refered to by this entry for serving static files.
     */
     fun getImagePath(): String {
-        return "uploaded/${this.id}.png"
+        return this.let { transaction { "/static/uploaded/${it.id}.png" } }
     }
 
     fun remove() {

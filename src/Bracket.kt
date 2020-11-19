@@ -126,17 +126,50 @@ fun Route.bracket() {
             // get bracket from id
             val bracket: Bracket? = call.parameters["bracketid"]?.toIntOrNull()?.let { lookupBracket(it) } 
 
-            if (user == null || user.admin == false || bracket == null) {
+            if (user == null) {
                 call.respondRedirect("/login", permanent = false)
+
+            } else if (bracket == null) {
+                call.respondRedirect("/", permanent = false)
 
             } else {
 
-                println(bracket)
                 call.respondHtml {
                     body {
                         +"Welcome! Logged in as ${user.name}"
                         br()
                         +"Viewing bracket ${bracket.name}"
+                        br()
+
+                        for (round in bracket.getRounds()) {
+                            h1 { +"Round ${round.number}" }
+                            br()
+
+                            val left: Entry? = round.left?.apply { img(src = this.getImagePath()) }
+                            if (left == null) {                                
+                                for (parent in round.getParents()) {
+                                    if (parent.childEntry == 0) {
+                                        +"The winner of round ${parent.number} (TBD)"
+                                        break
+                                    }
+                                }
+                            }
+
+                            br()
+                            +"VS"
+                            br()
+
+                            val right: Entry? = round.right?.apply { img(src = this.getImagePath()) }
+                            if (right == null) {
+                                for (parent in round.getParents()) {
+                                    if (parent.childEntry == 1) {
+                                        +"The winner of round ${parent.number} (TBD)"
+                                    }
+                                }
+                            }
+                            br()
+
+                        }
 
                     }
                 }            

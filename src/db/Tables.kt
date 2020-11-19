@@ -38,6 +38,7 @@ object Entries : IntIdTable() {
 
 object Rounds : IntIdTable() {
     val resolved = bool("resolved")
+    val number = integer("number")
     val left = reference("leftEntry", Entries).nullable()
     val right = reference("rightEntry", Entries).nullable()
     val bracket = reference("bracket", Brackets)
