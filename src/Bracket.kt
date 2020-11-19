@@ -142,32 +142,7 @@ fun Route.bracket() {
                         br()
 
                         for (round in bracket.getRounds()) {
-                            h1 { +"Round ${round.number}" }
-                            br()
-
-                            val left: Entry? = round.left?.apply { img(src = this.getImagePath()) }
-                            if (left == null) {                                
-                                for (parent in round.getParents()) {
-                                    if (parent.childEntry == 0) {
-                                        +"The winner of round ${parent.number} (TBD)"
-                                        break
-                                    }
-                                }
-                            }
-
-                            br()
-                            +"VS"
-                            br()
-
-                            val right: Entry? = round.right?.apply { img(src = this.getImagePath()) }
-                            if (right == null) {
-                                for (parent in round.getParents()) {
-                                    if (parent.childEntry == 1) {
-                                        +"The winner of round ${parent.number} (TBD)"
-                                    }
-                                }
-                            }
-                            br()
+                            genRoundHTML(round)
 
                         }
 
@@ -178,4 +153,62 @@ fun Route.bracket() {
         }
 
     }
+}
+
+/*
+Generate all the HTML for a single round
+ */
+fun kotlinx.html.BODY.genRoundHTML(round: Round) {
+    h1 {
+        attributes["id"] = "${round.number}" // id for same page redirect
+        +"Round ${round.number}" 
+    }
+    
+    if (!round.isFinale()) {
+        +"The winner of this round goes to "
+        a(href = "#${round.child?.number}") { +"Round ${round.child?.number}" }
+        +"."
+
+    }
+
+    br()
+
+    genEntryHTML(round, 0)
+
+    br()
+    +"VS"
+    br()
+
+    genEntryHTML(round, 1)
+    br()
+
+}
+
+/*
+Generate all the HTML for a single entry
+entrant is 0 for left, 1 for right
+ */
+fun kotlinx.html.BODY.genEntryHTML(round: Round, entrant: Int) {
+
+    val entry: Entry? = if (entrant == 0) {
+        round.left
+    } else {
+        round.right
+    }
+
+    for (parent in round.getParents()) {
+        if (parent.childEntry == entrant) {
+            +"The winner of "
+            a(href = "#${parent.number}") { +"Round ${parent.number}" }
+            +": "
+            break
+        }
+    }
+
+    // entry could be null, check if there was an entry
+    val success: Entry? = entry?.apply { img(src = this.getImagePath()) }
+    if (success == null) {                                
+        +" (TBD)"
+    }
+
 }

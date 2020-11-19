@@ -38,7 +38,17 @@ class Round(id: EntityID<Int>) : IntEntity(id) {
     
     var bracket by Bracket referencedOn Rounds.bracket
 
-    var child by Round optionalReferencedOn Rounds.child
+    var _child by Round optionalReferencedOn Rounds.child
+        private set
+    var child: Round?
+        set(value) {
+            this.let { transaction { it._child = value } }
+        }
+        get() {
+            return this.let { transaction { it._child } }
+        }
+
+
     var childEntry by Rounds.childEntry
 
     // lookup fields for convenience

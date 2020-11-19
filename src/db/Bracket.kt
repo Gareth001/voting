@@ -105,8 +105,10 @@ class Bracket(id: EntityID<Int>) : IntEntity(id) {
 
             myRounds.addAll(
                 newChunks.mapNotNull { 
-                    roundNumber += 1
-                    if (it.size == 1) null else createRound(null, null, roundNumber + 1, this, Pair(it[0], it[1]))
+                    if (it.size == 1) null else {
+                        roundNumber += 1
+                        createRound(null, null, roundNumber, this, Pair(it[0], it[1]))
+                    } 
                 }
             )
 
