@@ -94,6 +94,31 @@ class Round(id: EntityID<Int>) : IntEntity(id) {
     }
 
     /*
+    Sets the vote of a user for this round to either left or right
+     */
+    fun setVote(user: User, vote: Int) {
+        val myId = this.id
+
+        transaction {
+            val existing = RoundUsers.select { 
+                (RoundUsers.round eq myId) and (RoundUsers.user eq user.id) }.firstOrNull()
+
+            if (existing != null) {
+                RoundUsers.update(
+                    { (RoundUsers.round eq myId) and (RoundUsers.user eq user.id) }) {
+                    it[RoundUsers.vote] = vote
+                }
+            } else {
+                RoundUsers.insert {
+                    it[RoundUsers.round] = myId
+                    it[RoundUsers.user] = user.id
+                    it[RoundUsers.vote] = vote
+                }
+            }
+        }
+    }
+
+    /*
     Returns two lists of users, the first is the users who voted for the left entrant
     and the right is the users who voted for the right entrant.
      */
