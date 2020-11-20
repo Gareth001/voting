@@ -13,7 +13,16 @@ import org.mindrot.jbcrypt.BCrypt
 class User(id: EntityID<Int>) : IntEntity(id) {
     companion object : IntEntityClass<User>(Users)
 
-    var name: String by Users.name
+    var _name by Users.name
+        private set
+    var name: String
+        set(value) {
+            this.let { transaction { it._name = value } }
+        }
+        get() {
+            return this.let { transaction { it._name } }
+        }
+
     var passwordHash: String by Users.passwordHash
     var admin: Boolean by Users.admin
 
@@ -44,5 +53,11 @@ fun createUser(name: String, password: String, admin: Boolean): User? {
 
 fun lookupUser(name: String): User? {
     return transaction { User.find { Users.name eq name }.firstOrNull() }
+
+}
+
+
+fun lookupUserId(id: Int): User? {
+    return transaction { User.find { Users.id eq id }.firstOrNull() }
 
 }

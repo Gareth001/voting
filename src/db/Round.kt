@@ -12,9 +12,17 @@ import java.io.*
 class Round(id: EntityID<Int>) : IntEntity(id) {
     companion object : IntEntityClass<Round>(Rounds)
 
-    var resolved by Rounds.resolved
-    var number by Rounds.number
+    var _resolved by Rounds.resolved
+        private set
+    var resolved: Boolean
+        set(value) {
+            this.let { transaction { it._resolved = value } }
+        }
+        get() {
+            return this.let { transaction { it._resolved } }
+        }
 
+    var number by Rounds.number
 
     var _left by Entry optionalReferencedOn Rounds.left
         private set
@@ -99,6 +107,10 @@ class Round(id: EntityID<Int>) : IntEntity(id) {
     fun setVote(user: User, vote: Int) {
         val myId = this.id
 
+        if (!this.hasEntrants()) {
+            return
+        }
+
         transaction {
             val existing = RoundUsers.select { 
                 (RoundUsers.round eq myId) and (RoundUsers.user eq user.id) }.firstOrNull()
@@ -119,19 +131,20 @@ class Round(id: EntityID<Int>) : IntEntity(id) {
     }
 
     /*
-    Returns two lists of users, the first is the users who voted for the left entrant
-    and the right is the users who voted for the right entrant.
+    Returns a list of users who voted for the left entrant if entrant is 0
+    or the right entrant if entrant is 1
      */
-    fun getVotes(): Pair<List<User>, List<User>> {
+    fun getVotes(entrant: Int): List<User> {
         val myId = this.id
 
         // get all users that voted for left and right
-        val left = RoundUsers.select { RoundUsers.round eq myId }.andWhere{ 
-            RoundUsers.vote eq 0 }.map { User(it[RoundUsers.user]) }
-        val right = RoundUsers.select { RoundUsers.round eq myId }.andWhere { 
-            RoundUsers.vote eq 1 }.map { User(it[RoundUsers.user]) }
-
-        return Pair(left, right)
+        // very hacky code to get rid of "Property klass should be initialized before get" error 
+        // https://github.com/JetBrains/Exposed/issues/497
+        // !! since user is guaranteed to exist already
+        return transaction {
+            RoundUsers.select { RoundUsers.round eq myId }.andWhere{ 
+                RoundUsers.vote eq entrant }.map { lookupUserId(User(it[RoundUsers.user]).id.value)!! }
+        } 
         
     }
 
@@ -158,11 +171,13 @@ class Round(id: EntityID<Int>) : IntEntity(id) {
         var leftVotes = 0
         var rightVotes = 0
 
-        RoundUsers.select { RoundUsers.round eq myId }.forEach {
-            if (it[RoundUsers.vote] == 0) {
-                leftVotes += 1
-            } else {
-                rightVotes += 1
+        transaction {
+            RoundUsers.select { RoundUsers.round eq myId }.forEach {
+                if (it[RoundUsers.vote] == 0) {
+                    leftVotes += 1
+                } else {
+                    rightVotes += 1
+                }
             }
 
         }
@@ -218,3 +233,7 @@ fun createRound(left: Entry?, right: Entry?, number: Int, bracket: Bracket, pare
 //         Round.all().asSequence().toList()
 //     }
 // }
+
+fun lookupRound(id: Int): Round? {
+    return transaction { Round.find { Rounds.id eq id }.firstOrNull() }
+}

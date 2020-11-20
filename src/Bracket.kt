@@ -152,6 +152,27 @@ fun Route.bracket() {
             }
         }
 
+        post("/{bracketid}") {
+            val user = call.sessions.get<MySession>()?.username?.let {lookupUser(it)}
+
+            val post = call.receive<Parameters>()
+            val results: List<Int?>? = post["vote"]?.split("_")?.map { it.toIntOrNull() }
+
+            if (results != null && user != null) {
+                val round = results.getOrNull(0)
+                val entrant = results.getOrNull(1)
+
+                if (round != null && entrant != null) {
+                    lookupRound(round)?.setVote(user, entrant)
+                    lookupRound(round)?.tryResolve() // automatically resolve rounds
+                }
+            }
+
+            // redirect to same page 
+            call.respondRedirect("", permanent = false)
+
+        }
+
     }
 }
 
@@ -176,7 +197,7 @@ fun kotlinx.html.BODY.genRoundHTML(round: Round) {
     genEntryHTML(round, 0)
 
     br()
-    +"VS"
+    h3 { +"VS" }
     br()
 
     genEntryHTML(round, 1)
@@ -209,6 +230,30 @@ fun kotlinx.html.BODY.genEntryHTML(round: Round, entrant: Int) {
     val success: Entry? = entry?.apply { img(src = this.getImagePath()) }
     if (success == null) {                                
         +" (TBD)"
+    }
+
+    br()
+
+    // display votes 
+    val votes = round.getVotes(entrant)
+
+    if (votes.size == 0) {
+        +" No Votes"
+    } else {
+        +"Votes: "
+    }
+
+    round.getVotes(entrant).forEach {
+        +"${it.name}"
+    }
+
+    // voting form, one form per entrant (only one button)
+    // the round and entrant are encoded in the input
+    if (round.hasEntrants() && !round.resolved) {
+        form(action = "#${round.number}", method = FormMethod.post) {
+            input(InputType.hidden, name="vote") { value = "${round.id}_$entrant" }
+            input(InputType.submit, name="action") { value = "Vote" }
+        }
     }
 
 }
