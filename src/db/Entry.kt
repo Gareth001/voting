@@ -10,16 +10,24 @@ import org.jetbrains.exposed.sql.*
 import java.io.*
 
 
+/*
+ * DAO class for Entry.
+ * Entry is just an id, this id is used to store image files on disk (resources/static/uploaded/x.png)
+ * Therefore it doesn't require any fields.
+ */
 class Entry(id: EntityID<Int>) : IntEntity(id) {
     companion object : IntEntityClass<Entry>(Entries)
 
-    /**
-    * Returns the path to the image refered to by this entry for serving static files.
-    */
+    /*
+     * Returns the path to the image refered to by this entry for serving static files.
+     */
     fun getImagePath(): String {
         return this.let { transaction { "/static/uploaded/${it.id}.png" } }
     }
 
+    /* 
+     * Delete entry
+     */
     fun remove() {
         this.let {
             transaction {
@@ -28,11 +36,14 @@ class Entry(id: EntityID<Int>) : IntEntity(id) {
         }
     }
 
-
 }
 
+/* 
+ * Create entry. Takes a java.io.InputStream
+ * Side effect: save contents of InputStream to disk
+ */
 fun createEntry(image: InputStream): Entry {
-    // TODO validate image
+    // TODO validate image somehow
 
     val entry = transaction {
         Entry.new {
@@ -47,7 +58,8 @@ fun createEntry(image: InputStream): Entry {
 }
 
 /*
-Adapted from https://ktor.io/docs/uploads.html#receiving-files-using-multipart
+ * Copy from input stream to output stream
+ * Adapted from https://ktor.io/docs/uploads.html#receiving-files-using-multipart
  */
 fun InputStream.copyTo(out: OutputStream, bufferSize: Int = DEFAULT_BUFFER_SIZE): Long {
     val buffer = ByteArray(bufferSize)

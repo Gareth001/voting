@@ -9,38 +9,33 @@ import org.jetbrains.exposed.dao.*
 import org.jetbrains.exposed.sql.*
 import java.io.*
 
-
+/*
+ * DAO class for the table Brackets.
+ * A bracket contains all rounds, a threshold and a winning entrant
+ */
 class Bracket(id: EntityID<Int>) : IntEntity(id) {
     companion object : IntEntityClass<Bracket>(Brackets)
 
-    var _name by Brackets.name
-        private set
+    // name of bracket
+    private var _name by Brackets.name
     var name: String
-        set(value) {
-            this.let { transaction { it._name = value } }
-        }
-        get() {
-            return this._name
-        }
+        set(value) { this.let { transaction { it._name = value } } }
+        get() { return this._name }
 
-    var _threshold by Brackets.threshold
-        private set
+    // total number of votes for a round to be decided
+    private var _threshold by Brackets.threshold
     var threshold: Int
-        set(value) {
-            this.let { transaction { it._threshold = value } }
-        }
-        get() {
-            return this._threshold
-        }
+        set(value) { this.let { transaction { it._threshold = value } } }
+        get() { return this._threshold }
 
     var winner by Entry optionalReferencedOn Brackets.winner
-        // private set 
+        private set 
 
     // lookup all rounds in this bracket for convenience
     private val rounds by Round referrersOn Rounds.bracket
 
     /* 
-    Get all rounds
+     * Get all rounds in this bracket
      */
     fun getRounds(): List<Round> {
         // required workaround due to this having a different meaning in the transaction
@@ -51,7 +46,10 @@ class Bracket(id: EntityID<Int>) : IntEntity(id) {
         }
     }
 
-    // given a list of images, initializes all entries and rounds
+    /* 
+     * Given a list of already created entries, create all rounds for the bracket.
+     * Side effects: creates rounds
+     */
     fun createRounds(entries: List<Entry>) {
 
         // Create all rounds from these entries
@@ -68,9 +66,8 @@ class Bracket(id: EntityID<Int>) : IntEntity(id) {
             null
         }
 
+        // keep track of round number, since this is required for each round
         var roundNumber = rounds.size
-
-        println("created ${rounds.size} rounds with leftover ${leftover}")
 
         /* 
         * Recursive function to create the remaineder of the brackets.
@@ -119,8 +116,6 @@ class Bracket(id: EntityID<Int>) : IntEntity(id) {
                 null
             }
 
-            println("created ${myRounds.size} rounds with leftover ${newLeftover}")
-
             // recursive call
             createRoundsRecursive(myRounds, null, newLeftover)
 
@@ -132,7 +127,9 @@ class Bracket(id: EntityID<Int>) : IntEntity(id) {
 
 }
 
-// Create new bracket
+/*
+ * Create new bracket
+ */
 fun createBracket(name: String, threshold: Int): Bracket {
     return transaction {
         Bracket.new {
@@ -142,13 +139,16 @@ fun createBracket(name: String, threshold: Int): Bracket {
     }
 }
 
-
+/*
+ * Given an id, maybe return a bracket object
+ */
 fun lookupBracket(id: Int): Bracket? {
     return transaction { Bracket.find { Brackets.id eq id }.firstOrNull() }
 
 }
 
 /*
+ * Return all brackets
  */
 fun getAllBrackets(): List<Bracket> {
     return transaction {
