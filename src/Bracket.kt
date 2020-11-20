@@ -32,7 +32,7 @@ fun Route.bracket() {
 
                         // take multiple image files 
                         form(action = "new", method = FormMethod.post, encType = FormEncType.multipartFormData) {
-                            +"Image Files (1 per entrant): "
+                            +"Image Files (1 per entrant, must have at least 2 entrants): "
                             input(InputType.file, name = "file[]") {
                                 attributes["multiple"] = "true"
                             }
@@ -42,7 +42,7 @@ fun Route.bracket() {
                             input(InputType.text, name = "name") 
                             br()
 
-                            +"Voting threshold for each round: "
+                            +"Number of votes to decide each round (this must be an odd number): "
                             input(InputType.number, name = "threshold") 
                             br()
 
@@ -95,7 +95,12 @@ fun Route.bracket() {
                     // create bracket
                     val bracket: Bracket? = bracketName?.run {
                         threshold?.let {
-                            createBracket(this, it)
+                            // threshold must be odd
+                            if (it % 2 == 1 && it > 0) {
+                                createBracket(this, it)
+                            } else {
+                                null
+                            }
                         }
                     }
 
@@ -138,7 +143,7 @@ fun Route.bracket() {
                     body {
                         +"Welcome! Logged in as ${user.name}"
                         br()
-                        +"Viewing bracket ${bracket.name}"
+                        h1 { +"Viewing bracket ${bracket.name}" }
                         br()
 
                         for (round in bracket.getRounds()) {
@@ -180,7 +185,7 @@ fun Route.bracket() {
 Generate all the HTML for a single round
  */
 fun kotlinx.html.BODY.genRoundHTML(round: Round) {
-    h1 {
+    h2 {
         attributes["id"] = "${round.number}" // id for same page redirect
         +"Round ${round.number}" 
     }

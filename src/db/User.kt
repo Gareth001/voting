@@ -53,11 +53,9 @@ fun createUser(name: String, password: String, admin: Boolean): User? {
 
 fun lookupUser(name: String): User? {
     return transaction { User.find { Users.name eq name }.firstOrNull() }
-
 }
 
 
 fun lookupUserId(id: Int): User? {
     return transaction { User.find { Users.id eq id }.firstOrNull() }
-
 }

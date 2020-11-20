@@ -74,45 +74,17 @@ fun Application.module(testing: Boolean = false) {
                             a(href = "user/new") { +"Register new user" }
 
                         }
+                        br()
+                        br()
 
-                        // select from all brackets to view
-
-                    }
-                }            
-            }
-        }
-
-        get("/html-dsl") {
-
-            val numbers = (0..9).toList()
-            val user: User? = createUser("test", "test", true)
-            // val entry: Entry = createEntry("test".toByteArray())
-
-            // val bracket: Bracket = createBracket("test", 5)
-
-            // bracket.createRounds(MutableList(51) {"test".toByteArray()})
-
-            // println(bracket.name)
-
-            // println(bracket.getRounds())
-
-            // println(bracket.name)
-            // bracket.name = "testing"
-            // println(bracket.name)
-
-            // bracket.getRounds().first().canBeResolved()
-
-            // println(Round.all())
-
-            call.respondHtml {
-                body {
-                    h1 { +"HTML ${user?.id}" }
-                    ul {
-                        for (n in numbers) {
-                            li { +"$n" }
+                        +"Brackets:"
+                        br()
+                        for (bracket in getAllBrackets()) {
+                            a(href = "/bracket/${bracket.id}") { +"${bracket.name}" }
+                            br()
                         }
                     }
-                }
+                }            
             }
         }
 

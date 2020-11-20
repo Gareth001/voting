@@ -147,3 +147,11 @@ fun lookupBracket(id: Int): Bracket? {
     return transaction { Bracket.find { Brackets.id eq id }.firstOrNull() }
 
 }
+
+/*
+ */
+fun getAllBrackets(): List<Bracket> {
+    return transaction {
+        Bracket.all().asSequence().toList()
+    }
+}
