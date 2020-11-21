@@ -19,13 +19,13 @@ class Bracket(id: EntityID<Int>) : IntEntity(id) {
     // name of bracket
     private var _name by Brackets.name
     var name: String
-        set(value) { this.let { transaction { it._name = value } } }
+        set(value) {  transaction { _name = value } }
         get() { return this._name }
 
     // total number of votes for a round to be decided
     private var _threshold by Brackets.threshold
     var threshold: Int
-        set(value) { this.let { transaction { it._threshold = value } } }
+        set(value) { transaction { _threshold = value } }
         get() { return this._threshold }
 
     var winner by Entry optionalReferencedOn Brackets.winner
@@ -39,10 +39,8 @@ class Bracket(id: EntityID<Int>) : IntEntity(id) {
      */
     fun getRounds(): List<Round> {
         // required workaround due to this having a different meaning in the transaction
-        return this.let {
-            transaction {
-                it.rounds.asSequence().toList()
-            }
+        return transaction {
+            rounds.asSequence().toList()
         }
     }
 

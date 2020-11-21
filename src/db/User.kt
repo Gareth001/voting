@@ -16,8 +16,8 @@ class User(id: EntityID<Int>) : IntEntity(id) {
     // name of user (unique for every user)
     private var _name by Users.name
     var name: String
-        set(value) { this.let { transaction { it._name = value } } }
-        get() { return this.let { transaction { it._name } } }
+        set(value) { transaction { _name = value } }
+        get() { return transaction { _name } }
 
     // user's password hash using BCrypt
     var passwordHash: String by Users.passwordHash
@@ -29,10 +29,8 @@ class User(id: EntityID<Int>) : IntEntity(id) {
      * Delete user
      */
     fun remove() {
-        this.let {
-            transaction {
-                it.delete()
-            }
+        transaction {
+            delete()
         }
     }
 

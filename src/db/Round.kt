@@ -31,8 +31,8 @@ class Round(id: EntityID<Int>) : IntEntity(id) {
     // true if this round is resolved, false otherwise
     private var _resolved by Rounds.resolved
     var resolved: Boolean
-        set(value) { this.let { transaction { it._resolved = value } } }
-        get() { return this.let { transaction { it._resolved } } }
+        set(value) { transaction { _resolved = value } }
+        get() { return transaction { _resolved } }
 
     // round number. E.g. the first round in bracket has a round number of 1 but it 
     // may have a different id
@@ -41,16 +41,16 @@ class Round(id: EntityID<Int>) : IntEntity(id) {
     // first entry
     private var _left by Entry optionalReferencedOn Rounds.left
     var left: Entry?
-        set(value) { this.let { transaction { it._left = value } } }
+        set(value) { transaction { _left = value } }
         get() {
-            return this.let { transaction { it._left } }
+            return  transaction { _left }
         }
 
     // second entry
     private var _right by Entry optionalReferencedOn Rounds.right
     var right: Entry?
-        set(value) { this.let { transaction { it._right = value } } }
-        get() { return this.let { transaction { it._right } } }
+        set(value) {  transaction { _right = value } }
+        get() { return transaction { _right } }
     
     // link to bracket
     var bracket by Bracket referencedOn Rounds.bracket
@@ -59,8 +59,8 @@ class Round(id: EntityID<Int>) : IntEntity(id) {
     // can be null i.e. in the final roundc
     private var _child by Round optionalReferencedOn Rounds.child
     var child: Round?
-        set(value) { this.let { transaction { it._child = value } } }
-        get() { return this.let { transaction { it._child } } }
+        set(value) { transaction { _child = value } }
+        get() { return transaction { _child } }
 
     // 1 if the winner goes to the left of the child round, 0 for the right
     var childEntry by Rounds.childEntry
@@ -75,10 +75,8 @@ class Round(id: EntityID<Int>) : IntEntity(id) {
      * Return all parents of this round
      */
     fun getParents(): List<Round> {
-        return this.let {
-            transaction {
-                it.parents.asSequence().toList()
-            }
+        return transaction {
+            parents.asSequence().toList()
         }
     }
 
@@ -86,10 +84,8 @@ class Round(id: EntityID<Int>) : IntEntity(id) {
      * Delete round
      */
     fun remove() {
-        this.let {
-            transaction {
-                it.delete()
-            }
+        transaction {
+            delete()
         }
     }
 
@@ -112,10 +108,8 @@ class Round(id: EntityID<Int>) : IntEntity(id) {
      */
     fun canBeResolved(): Boolean {
         // check if there have been enough votes
-        return this.let {
-            transaction {
-                it.votes.count() == it.bracket.threshold.toLong()
-            }
+        return transaction {
+            votes.count() == bracket.threshold.toLong()
         }
     }
 

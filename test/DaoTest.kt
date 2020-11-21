@@ -1,23 +1,20 @@
 package com.voting
 
-import io.ktor.application.*
-import io.ktor.response.*
-import io.ktor.request.*
-import io.ktor.routing.*
-import io.ktor.http.*
-import io.ktor.html.*
-import kotlinx.html.*
-import kotlinx.css.*
 import kotlin.test.*
-import io.ktor.server.testing.*
 
 import com.voting.db.dao.*
 
 class UserTest {
 
     @Test
-    fun testCreation() {
+    fun testCreationRemove() {
+
+        // size won't be zero due to admin user
+        val size = getAllUsers().size
+
         val user: User? = createUser("test", "test", true)
+
+        assertEquals(getAllUsers().size, size + 1)
 
         assertNotNull(user)
 
@@ -25,6 +22,9 @@ class UserTest {
         assertEquals(user.admin, true)
 
         user.remove()
+
+        assertEquals(getAllUsers().size, size)
+
     }
 
     @Test
@@ -40,6 +40,30 @@ class UserTest {
         user.remove()
     }
 
+    @Test
+    fun testLookup() {
+        val user: User? = createUser("test", "test", true)
+        assertNotNull(user)
+
+        val user2: User? = createUser("testing", "testing", false)
+        assertNotNull(user2)
+
+        assertEquals(user.id, lookupUser("test")?.id)
+        assertNotEquals(user.id, lookupUser("testing")?.id)
+        assertEquals(user2.id, lookupUser("testing")?.id)
+        assertNotEquals(user2.id, lookupUser("testding")?.id)
+
+        assertEquals(user.id, lookupUserId(user.id.value)?.id)
+        assertNotEquals(user.id, lookupUserId(user2.id.value)?.id)
+        assertEquals(user2.id, lookupUserId(user2.id.value)?.id)
+
+        assertNull(lookupUser("testi"))
+        assertNull(lookupUser("te"))
+
+        user.remove()
+        user2.remove()
+    }
+
 }
 
 class RoundTest {
@@ -48,7 +72,9 @@ class RoundTest {
     fun testEmpty() {
         val bracket: Bracket = createBracket("test", 3)
 
-        val round = createRound(null, null, bracket, null)
+        val round = createRound(null, null, 1, bracket, null)
+
+        val id = round.id.value
 
         assertNull(round.left)
         assertNull(round.right)
@@ -59,7 +85,12 @@ class RoundTest {
         assertTrue(round.isFinale())
         assertFalse(round.canBeResolved())
 
+        assertNotNull(lookupRound(id))
+
         round.remove()
+
+        assertNull(lookupRound(id))
+
     }
 
 }
