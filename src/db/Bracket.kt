@@ -70,7 +70,7 @@ class Bracket(id: EntityID<Int>) : IntEntity(id) {
         var roundNumber = rounds.size
 
         /* 
-        * Recursive function to create the remaineder of the brackets.
+        * Recursive function to create the remainder of the brackets.
         * If there's a single leftover, use it as the first in the next round to ensure fairness 
         * e.g. for 2^n + 1 number of entrants.
         */
@@ -81,7 +81,7 @@ class Bracket(id: EntityID<Int>) : IntEntity(id) {
                 return
             }
 
-            var myRounds: MutableList<Round> = mutableListOf()
+            val myRounds: MutableList<Round> = mutableListOf()
             var startIndex = 0
 
             // check if there is a leftover, add it to the intial round

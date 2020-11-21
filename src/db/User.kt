@@ -2,12 +2,9 @@ package com.voting.db.dao
 
 import com.voting.db.tables.*
 
-import org.jetbrains.exposed.sql.statements.api.ExposedBlob
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.dao.*
-import org.jetbrains.exposed.sql.*
-import java.io.*
 import org.mindrot.jbcrypt.BCrypt
 
 /* 
@@ -72,4 +69,13 @@ fun lookupUser(name: String): User? {
  */
 fun lookupUserId(id: Int): User? {
     return transaction { User.find { Users.id eq id }.firstOrNull() }
+}
+
+/*
+ * Return all brackets
+ */
+fun getAllUsers(): List<User> {
+    return transaction {
+        User.all().asSequence().toList()
+    }
 }

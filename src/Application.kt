@@ -3,34 +3,29 @@ import com.voting.db.dao.*
 
 import io.ktor.application.*
 import io.ktor.response.*
-import io.ktor.request.*
 import io.ktor.routing.*
 import io.ktor.sessions.*
 import io.ktor.http.content.*
-import io.ktor.http.*
 import io.ktor.html.*
 import kotlinx.html.*
-import kotlinx.css.*
-import io.ktor.util.*
 import java.io.*
-import org.mindrot.jbcrypt.BCrypt
 
 
 val db = initdb()
 
-/**
+/*
  * Typed session that will be used in this application
  */
 data class MySession(val username: String)
 
 
 /* 
-secret for authenticating sessions
+ * secret for authenticating sessions
  */
 val secretHashKey = File("hashKey").readBytes()
 
 /*
-default admin user
+ * default admin user
  */
 val admin = createUser("admin", File("adminPass").readText(), true)
 
@@ -54,6 +49,7 @@ fun Application.module(testing: Boolean = false) {
 
         login()
         bracket()
+        user()
 
         get("/") {
 
@@ -71,7 +67,7 @@ fun Application.module(testing: Boolean = false) {
                         if (user.admin) {
                             a(href = "bracket/new") { +"Create new bracket" }
                             br()
-                            a(href = "user/new") { +"Register new user" }
+                            a(href = "user") { +"View Users" }
 
                         }
                         br()
@@ -80,7 +76,7 @@ fun Application.module(testing: Boolean = false) {
                         +"Brackets:"
                         br()
                         for (bracket in getAllBrackets()) {
-                            a(href = "/bracket/${bracket.id}") { +"${bracket.name}" }
+                            a(href = "/bracket/${bracket.id}") { +bracket.name }
                             br()
                         }
                     }

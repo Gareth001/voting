@@ -10,10 +10,6 @@ import io.ktor.http.content.*
 import io.ktor.http.*
 import io.ktor.html.*
 import kotlinx.html.*
-import kotlinx.css.*
-import io.ktor.util.*
-import java.io.*
-import org.mindrot.jbcrypt.BCrypt
 
 
 fun Route.bracket() {
@@ -22,7 +18,7 @@ fun Route.bracket() {
         get("/new") {
             val user = call.sessions.get<MySession>()?.username?.let {lookupUser(it)}
 
-            if (user == null || user.admin == false) {
+            if (user == null || !user.admin) {
                 call.respondRedirect("/login", permanent = false)
 
             } else {
@@ -59,7 +55,7 @@ fun Route.bracket() {
         post("/new") {
             val user = call.sessions.get<MySession>()?.username?.let {lookupUser(it)}
 
-            if (user == null || user.admin == false) {
+            if (user == null || !user.admin) {
                 call.respondRedirect("/login", permanent = false)
 
             } else {
@@ -105,7 +101,7 @@ fun Route.bracket() {
                     }
 
                     if (bracket == null) {
-                        // unsucessful - clear all entries
+                        // unsuccessful - clear all entries
                         entries.forEach { it.remove() }
                         call.respondRedirect("/bracket/new", permanent = false)
 
@@ -116,7 +112,7 @@ fun Route.bracket() {
                     }
 
                 } else {
-                    // unsucessful - clear all entries
+                    // unsuccessful - clear all entries
                     entries.forEach { it.remove() }
                     call.respondRedirect("/bracket/new", permanent = false)
                     
@@ -182,7 +178,7 @@ fun Route.bracket() {
 }
 
 /*
-Generate all the HTML for a single round
+ * Generate all the HTML for a single round
  */
 fun kotlinx.html.BODY.genRoundHTML(round: Round) {
     h2 {
@@ -211,8 +207,8 @@ fun kotlinx.html.BODY.genRoundHTML(round: Round) {
 }
 
 /*
-Generate all the HTML for a single entry
-entrant is 0 for left, 1 for right
+ * Generate all the HTML for a single entry
+ * entrant is 0 for left, 1 for right
  */
 fun kotlinx.html.BODY.genEntryHTML(round: Round, entrant: Int) {
 
@@ -242,14 +238,14 @@ fun kotlinx.html.BODY.genEntryHTML(round: Round, entrant: Int) {
     // display votes 
     val votes = round.getVotes(entrant)
 
-    if (votes.size == 0) {
+    if (votes.isEmpty()) {
         +" No Votes"
     } else {
         +"Votes: "
     }
 
     round.getVotes(entrant).forEach {
-        +"${it.name}"
+        +it.name
     }
 
     // voting form, one form per entrant (only one button)

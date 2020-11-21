@@ -2,12 +2,8 @@ package com.voting.db.dao
 
 import com.voting.db.tables.*
 
-import org.jetbrains.exposed.sql.statements.api.ExposedBlob
 import org.jetbrains.exposed.sql.transactions.transaction
-import org.jetbrains.exposed.dao.id.EntityID
-import org.jetbrains.exposed.dao.*
 import org.jetbrains.exposed.sql.*
-import java.io.*
 
 /*
 Using exposed's DAO functionality
