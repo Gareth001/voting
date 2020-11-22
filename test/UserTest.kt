@@ -65,32 +65,3 @@ class UserTest {
     }
 
 }
-
-class RoundTest {
-
-    @Test
-    fun testEmpty() {
-        val bracket: Bracket = createBracket("test", 3)
-
-        val round = createRound(null, null, 1, bracket, null)
-
-        val id = round.id.value
-
-        assertNull(round.left)
-        assertNull(round.right)
-        assertNull(round.child)
-        assertFalse(round.resolved)
-
-        assertFalse(round.hasEntrants())
-        assertTrue(round.isFinale())
-        assertFalse(round.canBeResolved())
-
-        assertNotNull(lookupRound(id))
-
-        round.remove()
-
-        assertNull(lookupRound(id))
-
-    }
-
-}

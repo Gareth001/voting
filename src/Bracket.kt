@@ -63,7 +63,7 @@ fun Route.bracket() {
 
                 var bracketName: String? = null
                 var threshold: Int? = null
-                var entries: MutableList<Entry> = mutableListOf()
+                val entries: MutableList<Entry> = mutableListOf()
 
                 // loop over each item in the response
                 multipart.forEachPart { part ->

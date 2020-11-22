@@ -34,6 +34,15 @@ class Bracket(id: EntityID<Int>) : IntEntity(id) {
     // lookup all rounds in this bracket for convenience
     private val rounds by Round referrersOn Rounds.bracket
 
+    /*
+     * Delete bracket
+     */
+    fun remove() {
+        transaction {
+            delete()
+        }
+    }
+
     /* 
      * Get all rounds in this bracket
      */

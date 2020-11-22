@@ -16,7 +16,7 @@ class Entry(id: EntityID<Int>) : IntEntity(id) {
     companion object : IntEntityClass<Entry>(Entries)
 
     /*
-     * Returns the path to the image refered to by this entry for serving static files.
+     * Returns the path to the image referred to by this entry for serving static files.
      */
     fun getImagePath(): String {
         // necessary let
