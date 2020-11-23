@@ -9,6 +9,8 @@ import io.ktor.http.content.*
 import io.ktor.html.*
 import kotlinx.html.*
 import java.io.*
+import io.ktor.features.CachingHeaders
+import io.ktor.http.*
 
 
 val db = initdb()
@@ -37,6 +39,15 @@ fun Application.module(testing: Boolean = false) {
     install(Sessions) {
         cookie<MySession>("SESSION") {
             transform(SessionTransportTransformerMessageAuthentication(secretHashKey))
+        }
+    }
+
+    install(CachingHeaders) {
+        options { outgoingContent ->
+            when (outgoingContent.contentType?.withoutParameters()) {
+                ContentType.Image.PNG -> CachingOptions(CacheControl.MaxAge(maxAgeSeconds = 24 * 60 * 60))
+                else -> null
+            }
         }
     }
 
