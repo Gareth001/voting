@@ -229,10 +229,10 @@ fun kotlinx.html.BODY.genEntryHTML(round: Round, entrant: Int) {
     }
 
     // entry could be null, check if there was an entry
-   val success: Entry? = entry?.apply { img(src = this.getImagePath()) }
-   if (success == null) {
-       +" (TBD)"
-   }
+    val success: Entry? = entry?.apply { img(src = this.getImagePath()) }
+    if (success == null) {
+        +" (TBD)"
+    }
 
     br()
 
