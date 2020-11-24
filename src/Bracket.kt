@@ -188,7 +188,8 @@ fun kotlinx.html.BODY.genRoundHTML(round: Round) {
     
     if (!round.isFinale()) {
         +"The winner of this round goes to "
-        a(href = "#${round.child?.number}") { +"Round ${round.child?.number}" }
+        val child = round.child?.number
+        a(href = "#${child}") { +"Round ${child}" }
         +"."
 
     }
@@ -228,32 +229,41 @@ fun kotlinx.html.BODY.genEntryHTML(round: Round, entrant: Int) {
     }
 
     // entry could be null, check if there was an entry
-    val success: Entry? = entry?.apply { img(src = this.getImagePath()) }
-    if (success == null) {                                
-        +" (TBD)"
-    }
+   val success: Entry? = entry?.apply { img(src = this.getImagePath()) }
+   if (success == null) {
+       +" (TBD)"
+   }
 
     br()
 
-    // display votes 
-    val votes = round.getVotes(entrant)
+    if (round.hasEntrants()) {
+        // display votes
+        val votes = round.getVotes(entrant)
 
-    if (votes.isEmpty()) {
-        +" No Votes"
-    } else {
-        +"Votes: "
-    }
+        if (votes.isEmpty()) {
+            +" No Votes"
+        } else {
+            +"Votes: "
 
-    round.getVotes(entrant).forEach {
-        +it.name
-    }
+            // display first voter
+            +votes[0].name
 
-    // voting form, one form per entrant (only one button)
-    // the round and entrant are encoded in the input
-    if (round.hasEntrants() && !round.resolved) {
-        form(action = "#${round.number}", method = FormMethod.post) {
-            input(InputType.hidden, name="vote") { value = "${round.id}_$entrant" }
-            input(InputType.submit, name="action") { value = "Vote" }
+            // comma separated
+            if (votes.size > 1) {
+                votes.subList(1, votes.size).forEach {
+                    +", "
+                    +it.name
+                }
+            }
+        }
+
+        if (!round.resolved) {
+            // voting form, one form per entrant (only one button)
+            // the round and entrant are encoded in the input
+            form(action = "#${round.number}", method = FormMethod.post) {
+                input(InputType.hidden, name="vote") { value = "${round.id}_$entrant" }
+                input(InputType.submit, name="action") { value = "Vote" }
+            }
         }
     }
 

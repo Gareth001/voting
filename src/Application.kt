@@ -31,7 +31,7 @@ val secretHashKey = File("hashKey").readBytes()
  */
 val admin = createUser("admin", File("adminPass").readText(), true)
 
-fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
+fun main(args: Array<String>): Unit = io.ktor.server.jetty.EngineMain.main(args)
 
 @Suppress("unused") // Referenced in application.conf
 @kotlin.jvm.JvmOverloads
