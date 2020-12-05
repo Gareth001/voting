@@ -10,7 +10,6 @@ import io.ktor.sessions.*
 import io.ktor.http.*
 import io.ktor.html.*
 import kotlinx.html.*
-import org.mindrot.jbcrypt.BCrypt
 
 
 fun Route.user() {

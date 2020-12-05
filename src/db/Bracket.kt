@@ -28,8 +28,10 @@ class Bracket(id: EntityID<Int>) : IntEntity(id) {
         set(value) { transaction { _threshold = value } }
         get() { return this._threshold }
 
-    var winner by Entry optionalReferencedOn Brackets.winner
-        private set 
+    private var _winner by Entry optionalReferencedOn Brackets.winner
+    var winner: Entry?
+        set(value) { transaction { _winner = value } }
+        get() { return this._winner }
 
     // lookup all rounds in this bracket for convenience
     private val rounds by Round referrersOn Rounds.bracket

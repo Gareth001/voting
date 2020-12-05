@@ -159,13 +159,23 @@ fun Route.bracket() {
             val post = call.receive<Parameters>()
             val results: List<Int?>? = post["vote"]?.split("_")?.map { it.toIntOrNull() }
 
-            if (results != null && user != null) {
-                val round = results.getOrNull(0)
+            // get bracket and verify round is in bracket
+            val bracket: Bracket? = call.parameters["bracketid"]?.toIntOrNull()?.let { lookupBracket(it) }
+
+            if (results != null && user != null && bracket != null) {
+                val round = results.getOrNull(0)?.let { lookupRound(it) }
                 val entrant = results.getOrNull(1)
 
-                if (round != null && entrant != null) {
-                    lookupRound(round)?.setVote(user, entrant)
-                    lookupRound(round)?.tryResolve() // automatically resolve rounds
+                // also check that round is in this bracket before voting
+                if (round != null && entrant != null && round.id in bracket.getRounds().map { it.id }.toSet()) {
+                    round.setVote(user, entrant)
+                    val result = round.tryResolve() // automatically resolve rounds
+
+                    if (result != null && round.isFinale()) {
+                        bracket.winner = result
+
+                    }
+
                 }
             }
 
