@@ -53,7 +53,6 @@ fun Application.module(testing: Boolean = false) {
 
     routing {
         // serve static files
-        // TODO intercept to check login
         static("static") {
             files("resources/static")
         }
