@@ -167,7 +167,8 @@ fun Route.bracket() {
                 val entrant = results.getOrNull(1)
 
                 // also check that round is in this bracket before voting
-                if (round != null && entrant != null && round.id in bracket.getRounds().map { it.id }.toSet()) {
+                if (round != null && entrant != null && round.hasEntrants() &&
+                        round.id in bracket.getRounds().map { it.id }.toSet()) {
                     round.setVote(user, entrant)
                     val result = round.tryResolve() // automatically resolve rounds
 

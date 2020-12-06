@@ -6,14 +6,15 @@ import org.jetbrains.exposed.sql.transactions.transaction
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.dao.*
 import java.io.*
+import java.util.UUID
 
 /*
  * DAO class for Entry.
  * Entry is just an id, this id is used to store image files on disk (resources/static/uploaded/x.png)
  * Therefore it doesn't require any fields.
  */
-class Entry(id: EntityID<Int>) : IntEntity(id) {
-    companion object : IntEntityClass<Entry>(Entries)
+class Entry(id: EntityID<UUID>) : UUIDEntity(id) {
+    companion object : UUIDEntityClass<Entry>(Entries)
 
     /*
      * Returns the path to the image referred to by this entry for serving static files.
