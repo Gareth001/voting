@@ -21,6 +21,10 @@ import org.jetbrains.exposed.sql.*
  * there is only 1 round left. Care must be taken to ensure the leftover rounds / entrants are used appropriately 
  * i.e. used in the next round not left until the end
  * Entries are therefore nullable.
+ *
+ * Note that this results in the same probability as the "bye" method. Bye would be good to do if 
+ * creating a visual representation of the bracket is wanted
+ * (bye method in https://en.wikipedia.org/wiki/Single-elimination_tournament)
  * 
  * As rounds are evaluated, the left and right can be filled in from the child attribute. We need to know which one,
  * so we keep a childEntry (0 for left, 1 for right) to find which to fill in when this round is evaluated.
