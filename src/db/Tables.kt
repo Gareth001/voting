@@ -25,6 +25,7 @@ object Rounds : IntIdTable() {
     val bracket = reference("bracket", Brackets)
     val child = reference("child", Rounds).nullable()
     val childEntry = integer("childEntry").nullable()
+    val shallowness = integer("shallowness")
 
 }
 
@@ -32,6 +33,7 @@ object Brackets : IntIdTable() {
     val name = varchar("name", 20)
     val threshold = integer("threshold") // votes to decide a winner in all rounds in the bracket (should be odd)
     val winner = reference("winner", Entries).nullable() // the final round
+    val depth = integer("depth")
 
 }
 

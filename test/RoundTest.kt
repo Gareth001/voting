@@ -10,7 +10,7 @@ class RoundTest {
     fun testEmpty() {
         val bracket: Bracket = createBracket("test", 3)
 
-        val round = createRound(null, null, 1, bracket, null)
+        val round = createRound(null, null, 1, 0, bracket, null)
 
         val id = round.id.value
 

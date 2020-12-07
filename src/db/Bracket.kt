@@ -33,6 +33,12 @@ class Bracket(id: EntityID<Int>) : IntEntity(id) {
         set(value) { transaction { _winner = value } }
         get() { return this._winner }
 
+    // maximum depth of bracket tree. e.g. an 8 entrant round will have a depth of 2
+    private var _depth by Brackets.depth
+    var depth: Int
+        set(value) { transaction { _depth = value } }
+        get() { return this._depth }
+
     // lookup all rounds in this bracket for convenience
     private val rounds by Round referrersOn Rounds.bracket
 
@@ -56,6 +62,21 @@ class Bracket(id: EntityID<Int>) : IntEntity(id) {
     }
 
     /* 
+     * Get string representation of the finals level of this round within this bracket
+     * e.g. last round will always be "Grand Final"
+     */
+    fun getFinalLevel(shallowness: Int): String {
+        return when (depth - shallowness) {
+            0 -> "Grand Final"
+            1 -> "Semifinals"
+            2 -> "Quarterfinals"
+            3 -> "Eighth-finals"
+            4 -> "Sixteenth-finals"
+            else -> "Preliminary ${shallowness + 1}"
+        }
+    }
+
+    /* 
      * Given a list of already created entries, create all rounds for the bracket.
      * Side effects: creates rounds
      */
@@ -65,7 +86,7 @@ class Bracket(id: EntityID<Int>) : IntEntity(id) {
         val chunks: List<List<Entry>> = entries.chunked(2)
 
         val rounds: List<Round> = chunks.mapIndexed { index, round ->
-            if (round.size == 1) null else createRound(round[0], round[1], index+1, this, null)
+            if (round.size == 1) null else createRound(round[0], round[1], index+1, 0, this, null)
         }.filterNotNull()
 
         // See if there's a leftover round (i.e. odd number of entrants)
@@ -82,12 +103,13 @@ class Bracket(id: EntityID<Int>) : IntEntity(id) {
         * Recursive function to create the remainder of the brackets.
         * If there's a single leftover, use it as the first in the next round to ensure fairness 
         * e.g. for 2^n + 1 number of entrants.
+        * Returns the depth of the brackets tree 
         */
-        fun createRoundsRecursive(rounds: List<Round>, leftoverEntry: Entry?, leftoverRound: Round?) {
+        fun createRoundsRecursive(rounds: List<Round>, depth: Int, leftoverEntry: Entry?, leftoverRound: Round?): Int {
 
             // base case - final round
             if (rounds.size == 1 && leftoverEntry == null && leftoverRound == null) {
-                return
+                return depth - 1
             }
 
             val myRounds: MutableList<Round> = mutableListOf()
@@ -95,12 +117,12 @@ class Bracket(id: EntityID<Int>) : IntEntity(id) {
 
             // check if there is a leftover, add it to the intial round
             if (leftoverEntry != null) {
-                myRounds.add(createRound(leftoverEntry, null, roundNumber + 1, this, Pair(null, rounds[0])))
+                myRounds.add(createRound(leftoverEntry, null, roundNumber + 1, depth, this, Pair(null, rounds[0])))
                 roundNumber += 1
                 startIndex = 1
 
             } else if (leftoverRound != null) {
-                myRounds.add(createRound(null, null, roundNumber + 1, this, Pair(leftoverRound, rounds[0])))
+                myRounds.add(createRound(null, null, roundNumber + 1, depth, this, Pair(leftoverRound, rounds[0])))
                 roundNumber += 1
                 startIndex = 1
 
@@ -113,7 +135,7 @@ class Bracket(id: EntityID<Int>) : IntEntity(id) {
                 newChunks.mapNotNull { 
                     if (it.size == 1) null else {
                         roundNumber += 1
-                        createRound(null, null, roundNumber, this, Pair(it[0], it[1]))
+                        createRound(null, null, roundNumber, depth, this, Pair(it[0], it[1]))
                     } 
                 }
             )
@@ -126,11 +148,12 @@ class Bracket(id: EntityID<Int>) : IntEntity(id) {
             }
 
             // recursive call
-            createRoundsRecursive(myRounds, null, newLeftover)
+            return createRoundsRecursive(myRounds, depth+1, null, newLeftover)
 
         }
 
-        createRoundsRecursive(rounds, leftover, null)
+        // generate remaining groups and set the depth of this bracket
+        this.depth = createRoundsRecursive(rounds, 1, leftover, null)
 
     }
 
@@ -144,6 +167,7 @@ fun createBracket(name: String, threshold: Int): Bracket {
         Bracket.new {
             this.name = name
             this.threshold = threshold
+            this.depth = 0
         }
     }
 }

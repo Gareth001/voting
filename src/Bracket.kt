@@ -138,11 +138,32 @@ fun Route.bracket() {
                 call.respondHtml {
                     body {
                         +"Welcome! Logged in as ${user.name}"
-                        br()
-                        h1 { +"Viewing bracket ${bracket.name}" }
-                        br()
+                        h1 { +"Viewing ${bracket.name}" }
+
+                        // provide all links to skip to final groups
+                        h3 { +"Skip to:" }
+
+                        for (i in 0..bracket.depth) {
+                            val finalLevel = bracket.getFinalLevel(i)
+                            a(href = "#${finalLevel}") { +finalLevel }
+                            br()
+                        }
+
+                        // variable to store the current group e.g. semi finals, finals
+                        var prevShallowness = -1
 
                         for (round in bracket.getRounds()) {
+                            // see if we're in a new depth in the bracket tree
+                            if (round.shallowness != prevShallowness) {
+                                // show final level
+                                h2 { 
+                                    val finalLevel = bracket.getFinalLevel(round.shallowness) 
+                                    attributes["id"] = "${finalLevel}" // assign id for same page redirect
+                                    +finalLevel
+                                }
+                                prevShallowness = round.shallowness
+                            }
+
                             genRoundHTML(round)
 
                         }
@@ -192,7 +213,7 @@ fun Route.bracket() {
  * Generate all the HTML for a single round
  */
 fun kotlinx.html.BODY.genRoundHTML(round: Round) {
-    h2 {
+    h3 {
         attributes["id"] = "${round.number}" // id for same page redirect
         +"Round ${round.number}" 
     }
@@ -210,7 +231,7 @@ fun kotlinx.html.BODY.genRoundHTML(round: Round) {
     genEntryHTML(round, 0)
 
     br()
-    h3 { +"VS" }
+    h4 { +"VS" }
     br()
 
     genEntryHTML(round, 1)

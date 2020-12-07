@@ -66,6 +66,12 @@ class Round(id: EntityID<Int>) : IntEntity(id) {
         set(value) { transaction { _child = value } }
         get() { return transaction { _child } }
 
+    // shallowness, the depth from the bottom of the bracket tree this round is
+    // e.g. first rounds have shallowness 0, the direct descendants of the first rounds have 
+    // shallowness 1 etc.
+    // can be null i.e. in the final roundc
+    var shallowness by Rounds.shallowness
+
     // 1 if the winner goes to the left of the child round, 0 for the right
     var childEntry by Rounds.childEntry
 
@@ -226,7 +232,8 @@ class Round(id: EntityID<Int>) : IntEntity(id) {
  * Side effect: set this to be the parent round's child
  * Note: Rounds may not have a left parent, and some rounds have no parents.
  */
-fun createRound(left: Entry?, right: Entry?, number: Int, bracket: Bracket, parent: Pair<Round?,Round>?): Round {
+fun createRound(left: Entry?, right: Entry?, number: Int, shallowness: Int, 
+        bracket: Bracket, parent: Pair<Round?,Round>?): Round {
     return transaction {
         val round = Round.new {
             this.resolved = false
@@ -234,6 +241,7 @@ fun createRound(left: Entry?, right: Entry?, number: Int, bracket: Bracket, pare
             this.left = left
             this.bracket = bracket
             this.right = right
+            this.shallowness = shallowness
         }
 
         parent?.first?.child = round
