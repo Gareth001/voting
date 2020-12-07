@@ -8,34 +8,30 @@ import io.ktor.sessions.*
 import io.ktor.http.content.*
 import io.ktor.html.*
 import kotlinx.html.*
-import java.io.*
+import java.io.File
 import io.ktor.features.CachingHeaders
 import io.ktor.http.*
 
-
-val db = initdb()
 
 /*
  * Typed session that will be used in this application
  */
 data class MySession(val username: String)
 
-
 /* 
  * secret for authenticating sessions
  */
 val secretHashKey = File("hashKey").readBytes()
-
-/*
- * default admin user
- */
-val admin = createUser("admin", File("adminPass").readText(), true)
 
 fun main(args: Array<String>): Unit = io.ktor.server.jetty.EngineMain.main(args)
 
 @Suppress("unused") // Referenced in application.conf
 @kotlin.jvm.JvmOverloads
 fun Application.module(testing: Boolean = false) {
+
+    // initiate database and create admin user in case none exists
+    initdb(testing)
+
     install(Sessions) {
         cookie<MySession>("SESSION") {
             transform(SessionTransportTransformerMessageAuthentication(secretHashKey))

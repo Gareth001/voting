@@ -9,12 +9,9 @@ class UserTest {
     @Test
     fun testCreationRemove() {
 
-        // size won't be zero due to admin user
-        val size = getAllUsers().size
-
         val user: User? = createUser("test", "test", true)
 
-        assertEquals(getAllUsers().size, size + 1)
+        assertEquals(getAllUsers().size, 1)
 
         assertNotNull(user)
 
@@ -23,7 +20,7 @@ class UserTest {
 
         user.remove()
 
-        assertEquals(getAllUsers().size, size)
+        assertEquals(getAllUsers().size, 0)
 
     }
 
