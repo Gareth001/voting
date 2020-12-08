@@ -46,9 +46,7 @@ class Round(id: EntityID<Int>) : IntEntity(id) {
     private var _left by Entry optionalReferencedOn Rounds.left
     var left: Entry?
         set(value) { transaction { _left = value } }
-        get() {
-            return  transaction { _left }
-        }
+        get() { return  transaction { _left } }
 
     // second entry
     private var _right by Entry optionalReferencedOn Rounds.right
