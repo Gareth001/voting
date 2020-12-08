@@ -20,24 +20,24 @@ class Bracket(id: EntityID<Int>) : IntEntity(id) {
     private var _name by Brackets.name
     var name: String
         set(value) {  transaction { _name = value } }
-        get() { return this._name }
+        get() { return _name }
 
     // total number of votes for a round to be decided
     private var _threshold by Brackets.threshold
     var threshold: Int
         set(value) { transaction { _threshold = value } }
-        get() { return this._threshold }
+        get() { return _threshold }
 
     private var _winner by Entry optionalReferencedOn Brackets.winner
     var winner: Entry?
         set(value) { transaction { _winner = value } }
-        get() { return this._winner }
+        get() { return transaction { _winner } } // transaction required since returning a DAO obj
 
     // maximum depth of bracket tree. e.g. an 8 entrant round will have a depth of 2
     private var _depth by Brackets.depth
     var depth: Int
         set(value) { transaction { _depth = value } }
-        get() { return this._depth }
+        get() { return _depth }
 
     // lookup all rounds in this bracket for convenience
     private val rounds by Round referrersOn Rounds.bracket

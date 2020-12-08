@@ -168,6 +168,12 @@ fun Route.bracket() {
 
                         }
 
+                        // see if there's a winner 
+                        if (bracket.winner != null) {
+                            h2 { +"WINNER!" }
+                            bracket.winner?.apply { img(src = this.getImagePath()) }
+                        }
+
                     }
                 }            
 
@@ -226,15 +232,17 @@ fun kotlinx.html.BODY.genRoundHTML(round: Round) {
 
     }
 
-    br()
-
-    genEntryHTML(round, 0)
-
-    br()
-    h4 { +"VS" }
-    br()
-
-    genEntryHTML(round, 1)
+    table {
+        tr {
+            td {
+                genEntryHTML(round, 0)
+            }
+            td { h4 { +"VS" } }
+            td {
+                genEntryHTML(round, 1)
+            }
+        }
+    }
     br()
 
 }
@@ -243,7 +251,7 @@ fun kotlinx.html.BODY.genRoundHTML(round: Round) {
  * Generate all the HTML for a single entry
  * entrant is 0 for left, 1 for right
  */
-fun kotlinx.html.BODY.genEntryHTML(round: Round, entrant: Int) {
+fun kotlinx.html.TD.genEntryHTML(round: Round, entrant: Int) {
 
     val entry: Entry? = if (entrant == 0) {
         round.left
@@ -256,6 +264,7 @@ fun kotlinx.html.BODY.genEntryHTML(round: Round, entrant: Int) {
             +"The winner of "
             a(href = "#${parent.number}") { +"Round ${parent.number}" }
             +": "
+            br()
             break
         }
     }

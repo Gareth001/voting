@@ -36,7 +36,7 @@ class Round(id: EntityID<Int>) : IntEntity(id) {
     private var _resolved by Rounds.resolved
     var resolved: Boolean
         set(value) { transaction { _resolved = value } }
-        get() { return transaction { _resolved } }
+        get() { return _resolved }
 
     // round number. E.g. the first round in bracket has a round number of 1 but it 
     // may have a different id
