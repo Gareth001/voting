@@ -233,11 +233,15 @@ fun kotlinx.html.BODY.genRoundHTML(round: Round) {
     }
 
     table {
+        style = "padding: 10px;"
         tr {
             td {
                 genEntryHTML(round, 0)
             }
-            td { h4 { +"VS" } }
+            td { 
+                style = "padding: 10px;"
+                h4 { +"VS" } 
+            }
             td {
                 genEntryHTML(round, 1)
             }
