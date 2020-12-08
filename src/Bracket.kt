@@ -158,7 +158,7 @@ fun Route.bracket() {
                                 // show final level
                                 h2 { 
                                     val finalLevel = bracket.getFinalLevel(round.shallowness) 
-                                    attributes["id"] = "${finalLevel}" // assign id for same page redirect
+                                    attributes["id"] = finalLevel // assign id for same page redirect
                                     +finalLevel
                                 }
                                 prevShallowness = round.shallowness
@@ -181,10 +181,10 @@ fun Route.bracket() {
         }
 
         post("/{bracketid}") {
-            val user = call.sessions.get<MySession>()?.username?.let {lookupUser(it)}
+            val user = call.sessions.get<MySession>()?.username?.let { lookupUser(it) }
 
             val post = call.receive<Parameters>()
-            val results: List<Int?>? = post["vote"]?.split("_")?.map { it.toIntOrNull() }
+            val results: List<Int>? = post["vote"]?.split("_")?.mapNotNull { it.toIntOrNull() }
 
             // get bracket and verify round is in bracket
             val bracket: Bracket? = call.parameters["bracketid"]?.toIntOrNull()?.let { lookupBracket(it) }
