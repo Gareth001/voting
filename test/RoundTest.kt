@@ -179,4 +179,44 @@ class RoundTest {
 
     }
 
+    @Test
+    fun testResolveThreeVotes() {
+        val bracket: Bracket = createBracket("test", 3)
+        val user1: User = createUser("test1", "test", true)!!
+        val user2: User = createUser("test2", "test", true)!!
+        val user3: User = createUser("test3", "test", true)!!
+
+        // don't use createEntry to avoid creating files on disk 
+        val entryLeft = transaction { Entry.new {} }
+        val entryRight = transaction { Entry.new {} }
+
+        val round = createRound(entryLeft, entryRight, 1, 0, bracket, null)
+
+        round.setVote(user1, 0)
+        round.setVote(user2, 1)
+
+        assertFalse(round.canBeResolved())
+
+        round.setVote(user3, 1)
+        
+        assertTrue(round.canBeResolved())
+
+        val result = round.tryResolve()
+        assertNotNull(result)
+        assertEquals(result.id, entryRight.id)
+
+        transaction {
+            RoundUsers.deleteWhere { RoundUsers.user greater 0 }
+        }
+
+        user1.remove()
+        user2.remove()
+        user3.remove()
+        round.remove()
+        bracket.remove()
+        entryLeft.remove()
+        entryRight.remove()
+
+    }
+
 }
