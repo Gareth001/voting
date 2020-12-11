@@ -21,8 +21,9 @@ fun initdb(testing: Boolean): Database {
         if (testing) {
             Database.connect("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1", driver = "org.h2.Driver", user = "root", password = "")
         } else {
-            val ret = Database.connect("jdbc:mariadb://localhost:3306/voting", driver = "org.mariadb.jdbc.Driver", user = "root", password = "")
-            createUser("admin", File("adminPass").readText(), true)
+            val ret = Database.connect("jdbc:mariadb://${System.getenv("DATABASE_IP") ?: "localhost"}:3306/voting", 
+                    driver = "org.mariadb.jdbc.Driver", user = System.getenv("DATABASE_USER") ?: "root", password = System.getenv("DATABASE_PASS") ?: "")
+            createUser("admin", System.getenv("ADMIN_PASS") ?: "test", true)
             ret
         }
 

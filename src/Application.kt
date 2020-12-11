@@ -21,7 +21,7 @@ data class MySession(val username: String)
 /* 
  * secret for authenticating sessions
  */
-val secretHashKey = File("hashKey").readBytes()
+val secretHashKey = System.getenv("HASH_KEY")?.toByteArray() ?: File("hashKey").readBytes()
 
 fun main(args: Array<String>): Unit = io.ktor.server.jetty.EngineMain.main(args)
 

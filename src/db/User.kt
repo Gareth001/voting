@@ -38,7 +38,8 @@ class User(id: EntityID<Int>) : IntEntity(id) {
 
 /* 
  * Create user. Hashes and salts the plaintext password. 
- * Will fail if there is another user with the same name.
+ * Will fail if there is another user with the same name.\
+ * Note: will print exception due to https://github.com/JetBrains/Exposed/issues/547
  */
 fun createUser(name: String, password: String, admin: Boolean): User? {
     // can result in Unique index or primary key violation
