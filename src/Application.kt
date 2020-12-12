@@ -56,6 +56,7 @@ fun Application.module(testing: Boolean = false) {
         login()
         bracket()
         user()
+        css()
 
         get("/") {
 
@@ -66,6 +67,9 @@ fun Application.module(testing: Boolean = false) {
 
             } else {
                 call.respondHtml {
+                    head {
+                        link(rel = "stylesheet", href = "/style.css", type = "text/css")
+                    }
                     body {
                         +"Welcome! Logged in as ${user.name}"
                         br()

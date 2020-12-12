@@ -16,6 +16,10 @@ fun Route.login() {
     route("/login") {
         get {
             call.respondHtml {
+                head {
+                        link(rel = "stylesheet", href = "/style.css", type = "text/css")
+                }
+
                 body {
                     form(action = "/login", method = FormMethod.post) {
 

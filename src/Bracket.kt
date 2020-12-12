@@ -136,42 +136,38 @@ fun Route.bracket() {
             } else {
 
                 call.respondHtml {
+                    head {
+                        link(rel = "stylesheet", href = "/style.css", type = "text/css")
+                    }
                     body {
-                        +"Welcome! Logged in as ${user.name}"
-                        h1 { +"Viewing ${bracket.name}" }
 
-                        // provide all links to skip to final groups
-                        h3 { +"Skip to:" }
+                        sidebar(user, bracket)
 
-                        for (i in 0..bracket.depth) {
-                            val finalLevel = bracket.getFinalLevel(i)
-                            a(href = "#${finalLevel}") { +finalLevel }
-                            br()
-                        }
+                        mainContent {
+                            // variable to store the current group e.g. semi finals, finals
+                            var prevShallowness = -1
 
-                        // variable to store the current group e.g. semi finals, finals
-                        var prevShallowness = -1
-
-                        for (round in bracket.getRounds()) {
-                            // see if we're in a new depth in the bracket tree
-                            if (round.shallowness != prevShallowness) {
-                                // show final level
-                                h2 { 
-                                    val finalLevel = bracket.getFinalLevel(round.shallowness) 
-                                    attributes["id"] = finalLevel // assign id for same page redirect
-                                    +finalLevel
+                            for (round in bracket.getRounds()) {
+                                // see if we're in a new depth in the bracket tree
+                                if (round.shallowness != prevShallowness) {
+                                    // show final level
+                                    h2 { 
+                                        val finalLevel = bracket.getFinalLevel(round.shallowness) 
+                                        attributes["id"] = finalLevel // assign id for same page redirect
+                                        +finalLevel
+                                    }
+                                    prevShallowness = round.shallowness
                                 }
-                                prevShallowness = round.shallowness
+
+                                genRoundHTML(round)
+
                             }
 
-                            genRoundHTML(round)
-
-                        }
-
-                        // see if there's a winner 
-                        if (bracket.winner != null) {
-                            h2 { +"WINNER!" }
-                            bracket.winner?.apply { img(src = this.getImagePath()) }
+                            // see if there's a winner 
+                            if (bracket.winner != null) {
+                                h2 { +"WINNER!" }
+                                bracket.winner?.apply { img(src = this.getImagePath()) }
+                            }
                         }
 
                     }
@@ -312,4 +308,90 @@ fun kotlinx.html.TD.genEntryHTML(round: Round, entrant: Int) {
         }
     }
 
+}
+
+
+fun kotlinx.html.BODY.sidebar(user: User?, bracket: Bracket?) {
+    div(classes = "sidenav") {
+
+        if (user != null) {
+            +"Welcome! Logged in as ${user.name}"
+        }
+        br()
+
+        h2 { a(href = "/") { +"Home" } }
+        br()
+
+        if (bracket != null) {
+            h2 { +"Viewing ${bracket.name}" }
+            +"${bracket.threshold} votes to decide each round."
+            br()
+
+            val rounds = bracket.getRounds().listIterator()
+
+            for (i in 0..bracket.depth) {
+                val finalLevel = bracket.getFinalLevel(i)
+                a(href = "#${finalLevel}") { +finalLevel }
+
+                // the following is for expanding to show all the rounds in a list
+                +" (expand "
+
+                input(type = InputType.checkBox) {
+                    attributes["id"] = "checkbox"
+                    attributes["checked"] = ""
+                }
+
+                +")"
+
+                // add a link to each round that is in this bracket
+                div() {
+                    attributes["id"] = "hidden"
+
+                    /*
+                     * display a link alongside an icon which shows if the round has been resolved,
+                     * voting is in progress or voting is locked
+                     */
+                    fun DIV.display(round: Round) {
+                        a(href = "#${round.number}") { +"Round ${round.number}" }
+                        if (round.resolved) {
+                            +"✅"
+                        } else if (round.hasEntrants()) {
+                            +"❌"
+                        } else {
+                            +"🔒"
+                        }
+                        br()
+                    } 
+
+                    if (rounds.hasNext()) {
+                        val round = rounds.next()
+                        display(round)
+
+                        while (rounds.hasNext()) {
+                            val next = rounds.next()
+                            if (next.shallowness != round.shallowness) {
+                                rounds.previous()
+                                break
+                            }
+                            display(next)
+
+                        }
+                    }
+                }
+
+                br()
+
+            }
+        }
+    }
+
+}
+
+/* 
+ * wrap the main content in this element to make the sidebar work
+ */
+fun kotlinx.html.BODY.mainContent(html: () -> Unit) {
+    div(classes = "main") {
+        html()
+    }
 }
