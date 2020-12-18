@@ -41,7 +41,6 @@ dependencies {
     implementation "ch.qos.logback:logback-classic:$logback_version"
     implementation "io.ktor:ktor-server-core:$ktor_version"
     implementation "io.ktor:ktor-html-builder:$ktor_version"
-    implementation "org.jetbrains:kotlin-css-jvm:1.0.0-pre.31-kotlin-1.2.41"
     implementation "org.jetbrains.exposed:exposed-core:$exposed_version"
     implementation "org.jetbrains.exposed:exposed-dao:$exposed_version"
     implementation "org.jetbrains.exposed:exposed-jdbc:$exposed_version"

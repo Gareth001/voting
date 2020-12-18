@@ -17,7 +17,7 @@ fun Route.login() {
         get {
             call.respondHtml {
                 head {
-                        link(rel = "stylesheet", href = "/style.css", type = "text/css")
+                        link(rel = "stylesheet", href = "/static/style.css", type = "text/css")
                 }
 
                 body {

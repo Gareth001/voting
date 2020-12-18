@@ -137,13 +137,36 @@ fun Route.bracket() {
 
                 call.respondHtml {
                     head {
-                        link(rel = "stylesheet", href = "/style.css", type = "text/css")
+                        link(rel = "stylesheet", href = "/static/style.css", type = "text/css")
                     }
                     body {
 
                         sidebar(user, bracket)
 
                         mainContent {
+                            // see if there's a winner
+                            if (bracket.winner != null) {
+                                h2 {
+                                    attributes["id"] = "Winner" // assign id for same page redirect
+                                    +"${bracket.name} WINNER!"
+                                }
+
+                                fun BODY.party() {
+                                    div(classes = "marquee") { 
+                                        p { +"\uD83C\uDF89\uD83C\uDF8A".repeat(6) }
+                                        p { 
+                                            style = "left: 300px;"
+                                            +"\uD83C\uDF89\uD83C\uDF8A".repeat(6) 
+                                        }
+                                    }
+                                }
+
+                                party()
+                                bracket.winner?.apply { img(src = this.getImagePath()) }
+                                party()
+                                br
+                            }
+
                             // variable to store the current group e.g. semi finals, finals
                             var prevShallowness = -1
 
@@ -165,7 +188,7 @@ fun Route.bracket() {
 
                             // see if there's a winner 
                             if (bracket.winner != null) {
-                                h2 { +"WINNER!" }
+                                h2 { +"Winner" }
                                 bracket.winner?.apply { img(src = this.getImagePath()) }
                             }
                         }
@@ -282,9 +305,14 @@ fun kotlinx.html.TD.genEntryHTML(round: Round, entrant: Int) {
         val votes = round.getVotes(entrant)
 
         if (votes.isEmpty()) {
-            +" No Votes"
+            +"0 Votes"
         } else {
-            +"Votes: "
+            if (votes.size == 1) {
+                +"1 Vote: "
+            }
+            else {
+                +"${votes.size} Votes: "
+            }
 
             // display first voter
             +votes[0].name
@@ -323,6 +351,11 @@ fun kotlinx.html.BODY.sidebar(user: User, bracket: Bracket) {
         h2 { +"Viewing ${bracket.name}" }
         +"${bracket.threshold} votes to decide each round."
         br()
+
+        if (bracket.winner != null) {
+            a(href = "#Winner") { +"Winner" }
+            br()
+        }
 
         val rounds = bracket.getRounds().listIterator()
 
