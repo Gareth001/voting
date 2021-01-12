@@ -7,13 +7,7 @@ import org.jetbrains.exposed.sql.*
 import java.io.File
 
 /*
-Using exposed's DAO functionality
-
-Maybe I'm doing things wrong but lots of workaroudns are required to make it actually work like a dao,
-e.g. accessing convenience fields or things like Bracket.all() requires it to be in a transaction which 
-defeats the point of a DAO. 
-Also, no fields can be modified as they are not in a transaction either
-
+ * Using exposed's DAO functionality
  */
 
 fun initdb(testing: Boolean): Database {
