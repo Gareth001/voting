@@ -10,6 +10,8 @@ import io.ktor.http.content.*
 import io.ktor.http.*
 import io.ktor.html.*
 import kotlinx.html.*
+import java.time.Duration
+import java.time.LocalDateTime
 
 
 fun Route.bracket() {
@@ -122,6 +124,9 @@ fun Route.bracket() {
 
 
         get("/{bracketid}") {
+            val start = LocalDateTime.now()
+            println("start request ${start}")
+
             val user = call.sessions.get<MySession>()?.username?.let {lookupUser(it)}
 
             // get bracket from id
@@ -182,7 +187,7 @@ fun Route.bracket() {
                                     prevShallowness = round.shallowness
                                 }
 
-                                genRoundHTML(round)
+                                getRoundHTML(round, bracket)
 
                             }
 
@@ -197,6 +202,9 @@ fun Route.bracket() {
                 }            
 
             }
+
+            println("finish request in ${Duration.between(start, LocalDateTime.now()).toMillis()}ms")
+
         }
 
         post("/{bracketid}") {
@@ -218,6 +226,18 @@ fun Route.bracket() {
                     round.setVote(user, entrant)
                     val result = round.tryResolve() // automatically resolve rounds
 
+                    // invalidate cache of this round
+                    jedis.del("bracket.${bracket.id}.round.${round.id}")
+                    jedis.del("bracket.${bracket.id}.sidebar.${round.id}")
+
+                    // maybe invalidate cache of child round
+                    if (result != null) {
+                        round.child?.let {
+                            jedis.del("bracket.${bracket.id}.round.${it.id}")
+                            jedis.del("bracket.${bracket.id}.sidebar.${it.id}")
+                        }
+                    }
+
                     if (result != null && round.isFinale()) {
                         bracket.winner = result
 
@@ -234,187 +254,6 @@ fun Route.bracket() {
     }
 }
 
-/*
- * Generate all the HTML for a single round
- */
-fun kotlinx.html.BODY.genRoundHTML(round: Round) {
-    h3 {
-        attributes["id"] = "${round.number}" // id for same page redirect
-        +"Round ${round.number}" 
-    }
-    
-    if (!round.isFinale()) {
-        +"The winner of this round goes to "
-        val child = round.child?.number
-        a(href = "#${child}") { +"Round ${child}" }
-        +"."
-
-    }
-
-    table {
-        style = "padding: 10px;"
-        tr {
-            td {
-                genEntryHTML(round, 0)
-            }
-            td { 
-                style = "padding: 10px;"
-                h4 { +"VS" } 
-            }
-            td {
-                genEntryHTML(round, 1)
-            }
-        }
-    }
-    br()
-
-}
-
-/*
- * Generate all the HTML for a single entry
- * entrant is 0 for left, 1 for right
- */
-fun kotlinx.html.TD.genEntryHTML(round: Round, entrant: Int) {
-
-    val entry: Entry? = if (entrant == 0) {
-        round.left
-    } else {
-        round.right
-    }
-
-    for (parent in round.getParents()) {
-        if (parent.childEntry == entrant) {
-            +"The winner of "
-            a(href = "#${parent.number}") { +"Round ${parent.number}" }
-            +": "
-            br()
-            break
-        }
-    }
-
-    // entry could be null, check if there was an entry
-    val success: Entry? = entry?.apply { img(src = this.getImagePath()) }
-    if (success == null) {
-        +" (TBD)"
-    }
-
-    br()
-
-    if (round.hasEntrants()) {
-        // display votes
-        val votes = round.getVotes(entrant)
-
-        if (votes.isEmpty()) {
-            +"0 Votes"
-        } else {
-            if (votes.size == 1) {
-                +"1 Vote: "
-            }
-            else {
-                +"${votes.size} Votes: "
-            }
-
-            // display first voter
-            +votes[0].name
-
-            // comma separated
-            if (votes.size > 1) {
-                votes.subList(1, votes.size).forEach {
-                    +", "
-                    +it.name
-                }
-            }
-        }
-
-        if (!round.resolved) {
-            // voting form, one form per entrant (only one button)
-            // the round and entrant are encoded in the input
-            form(action = "#${round.number}", method = FormMethod.post) {
-                input(InputType.hidden, name="vote") { value = "${round.id}_$entrant" }
-                input(InputType.submit, name="action") { value = "Vote" }
-            }
-        }
-    }
-
-}
-
-
-fun kotlinx.html.BODY.sidebar(user: User, bracket: Bracket) {
-    div(classes = "sidenav") {
-
-        +"Welcome! Logged in as ${user.name}"
-        br()
-
-        h2 { a(href = "/") { +"Home" } }
-        br()
-
-        h2 { +"Viewing ${bracket.name}" }
-        +"${bracket.threshold} votes to decide each round."
-        br()
-
-        if (bracket.winner != null) {
-            a(href = "#Winner") { +"Winner" }
-            br()
-        }
-
-        val rounds = bracket.getRounds().listIterator()
-
-        for (i in 0..bracket.depth) {
-            val finalLevel = bracket.getFinalLevel(i)
-            a(href = "#${finalLevel}") { +finalLevel }
-
-            // the following is for expanding to show all the rounds in a list
-            +" (expand "
-
-            input(type = InputType.checkBox) {
-                attributes["id"] = "checkbox"
-                attributes["checked"] = ""
-            }
-
-            +")"
-
-            // add a link to each round that is in this bracket
-            div() {
-                attributes["id"] = "hidden"
-
-                /*
-                    * display a link alongside an icon which shows if the round has been resolved,
-                    * voting is in progress or voting is locked
-                    */
-                fun DIV.display(round: Round) {
-                    a(href = "#${round.number}") { +"Round ${round.number}" }
-                    if (round.resolved) {
-                        +"✅"
-                    } else if (round.hasEntrants()) {
-                        +"❌"
-                    } else {
-                        +"🔒"
-                    }
-                    br()
-                } 
-
-                if (rounds.hasNext()) {
-                    val round = rounds.next()
-                    display(round)
-
-                    while (rounds.hasNext()) {
-                        val next = rounds.next()
-                        if (next.shallowness != round.shallowness) {
-                            rounds.previous()
-                            break
-                        }
-                        display(next)
-
-                    }
-                }
-            }
-
-            br()
-
-        }
-    }
-
-}
 
 /* 
  * wrap the main content in this element to make the sidebar work

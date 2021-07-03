@@ -12,3 +12,4 @@ gradlew.bat
 resources/static/uploaded
 adminPass
 hashKey
+env_variables.yaml
