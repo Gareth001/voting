@@ -56,6 +56,7 @@ fun Application.module(testing: Boolean = false) {
         login()
         bracket()
         user()
+        admin()
 
         get("/") {
 
@@ -77,6 +78,9 @@ fun Application.module(testing: Boolean = false) {
                             a(href = "bracket/new") { +"Create new bracket" }
                             br()
                             a(href = "user") { +"View Users" }
+                            form(action = "/admin/clear-cache", method = FormMethod.post) {
+                                input(InputType.submit) { value = "Clear redis cache" }
+                            }
 
                         }
                         br()
