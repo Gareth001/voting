@@ -28,6 +28,8 @@ Here, round 1 has reached the voting threshold of 3 votes. This means that it ha
 
 A database is used to store users and round information. The server will look for an instance of MariaDB on port 3306. 
 
+Redis is also used as a caching server. Ensure you have redis running locally before starting the server.
+
 Note that the image files for the entrants are stored on the local filesystem, so write access is required. This will be a problem if deploying on e.g. Google App Engine.
 
 2. Secrets
