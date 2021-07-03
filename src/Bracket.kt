@@ -246,8 +246,12 @@ fun Route.bracket() {
                 }
             }
 
-            // redirect to same page 
-            call.respondRedirect("", permanent = false)
+            // redirect to same page if valid
+            bracket?.id.let {
+                call.respondRedirect("/bracket/$it", permanent = false)
+            }
+            // otherwise redirect home
+            call.respondRedirect("/", permanent = false)
 
         }
 

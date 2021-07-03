@@ -80,7 +80,7 @@ fun Route.user() {
             val post = call.receive<Parameters>()
 
             if (user == null || !user.admin) {
-                call.respondRedirect("", permanent = false)
+                call.respondRedirect("/login", permanent = false)
 
             } else {
                 // try create new user
@@ -89,7 +89,7 @@ fun Route.user() {
                 } }
 
                 if (newUser == null) {
-                    call.respondRedirect("", permanent = false)
+                    call.respondRedirect("/user/new", permanent = false)
                 } else {
                     call.respondRedirect("/user", permanent = false)
                 }
